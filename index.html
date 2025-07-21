@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>それで？</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1421;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background-color: #2a2f3a;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #3e434e;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .chat-info h2 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .chat-info p {
+            font-size: 13px;
+            color: #8696a0;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="chat-bg" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23chat-bg)"/></svg>');
+        }
+        
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.bot {
+            justify-content: flex-start;
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-bubble {
+            background-color: #005c4b;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message.bot .message-bubble {
+            background-color: #202c33;
+            color: #e9edef;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #8696a0;
+            margin-top: 2px;
+            text-align: right;
+        }
+        
+        .input-area {
+            padding: 10px 20px;
+            background-color: #2a2f3a;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .input-container {
+            flex: 1;
+            background-color: #40474f;
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #messageInput {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #e9edef;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        #messageInput::placeholder {
+            color: #8696a0;
+        }
+        
+        .send-button {
+            width: 40px;
+            height: 40px;
+            background-color: #25d366;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .send-button:hover {
+            background-color: #20bd5a;
+        }
+        
+        .send-button:disabled {
+            background-color: #8696a0;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            .message-bubble {
+                max-width: 85%;
+            }
+            
+            .input-area {
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="avatar">bot</div>
+        <div class="chat-info">
+            <h2>それで？ボット</h2>
+            <p>オンライン</p>
+        </div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="message bot">
+            <div class="message-bubble">
+                こんにちは！何か話しかけてみてください。
+                <div class="message-time" id="welcomeTime"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="input-area">
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="メッセージを入力...">
+        </div>
+        <button class="send-button" id="sendButton">
+            ➤
+        </button>
+    </div>
+    
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        
+        // 現在時刻を表示
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('ja-JP', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+        
+        // 初期メッセージの時刻を設定
+        document.getElementById('welcomeTime').textContent = getCurrentTime();
+        
+        // メッセージを追加する関数
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${text}
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // メッセージを送信する関数
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            
+            if (message === '') return;
+            
+            // ユーザーのメッセージを表示
+            addMessage(message, true);
+            
+            // 入力フィールドをクリア
+            messageInput.value = '';
+            
+            // 少し待ってからボットの返答
+            setTimeout(() => {
+                addMessage('それで？');
+            }, 500);
+        }
+        
+        // イベントリスナー
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 入力フィールドにフォーカス
+        messageInput.focus();
+    </script>
+</body>
+</html>
