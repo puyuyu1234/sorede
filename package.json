@@ -1,0 +1,14 @@
+{
+  "name": "sorede",
+  "version": "1.0.0",
+  "description": "WhatsAppみたいなチャット形式で入力し、それで？とだけ返してくる人工無能アプリ",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build process needed for static site'",
+    "dev": "python3 -m http.server 8000"
+  },
+  "homepage": "https://username.github.io/sorede",
+  "keywords": ["chat", "bot", "github-pages"],
+  "author": "",
+  "license": "MIT"
+}
